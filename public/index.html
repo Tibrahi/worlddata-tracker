@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlobalPulse | Real-Time Insights</title>
+    <link rel="stylesheet" href="main.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i data-lucide="globe"></i>
+                <h1>Global<span>Pulse</span></h1>
+            </div>
+            <div id="last-updated" class="status">Syncing...</div>
+        </header>
+
+        <main id="dashboard">
+            <section class="stats-grid" id="stats-container">
+                <div class="loading">Loading global data...</div>
+            </section>
+        </main>
+
+        <footer>
+            <p>GlobalPulse System &copy; 2026 | <span class="tagline">Monitoring Global Trends</span></p>
+        </footer>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>
