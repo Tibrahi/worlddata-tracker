@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlobalPulse | Real-Time Financial Intelligence</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>GlobalPulse | Live Financial System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="main.css">
@@ -16,49 +16,34 @@
             <i class="fa-solid fa-earth-americas"></i> GlobalPulse
         </div>
         <ul class="nav-links">
-            <li class="active"><i class="fa-solid fa-chart-line"></i> Live Market</li>
-            <li><i class="fa-solid fa-layer-group"></i> Portfolio</li>
-            <li><i class="fa-solid fa-wallet"></i> Assets</li>
-            <li><i class="fa-solid fa-gear"></i> System Config</li>
+            <li class="active"><i class="fa-solid fa-wave-square"></i> Live Market</li>
+            <li><i class="fa-solid fa-database"></i> Data Logs</li>
+            <li><i class="fa-solid fa-sliders"></i> API Config</li>
         </ul>
-        <div class="user-profile">
-            <div class="avatar"><i class="fa-solid fa-user"></i></div>
-            <div class="user-info">
-                <span>Admin User</span>
-                <small>API Key: Active</small>
-            </div>
+        <div class="system-status">
+            <div class="status-dot pulse"></div>
+            <span>System Operational</span>
         </div>
     </nav>
 
     <main class="dashboard">
-        
         <header>
-            <div class="header-text">
-                <h1>Market Overview</h1>
-                <p>Real-time financial data stream via Alpha Vantage Node.</p>
+            <div class="title-area">
+                <h1>Financial Intelligence</h1>
+                <p>Real-time data stream via Secure API Node.</p>
             </div>
-            <div class="status-box">
-                <span class="dot pulse"></span>
-                <span id="connection-status">Live Stream Active</span>
-            </div>
+            <div class="live-clock" id="clock">--:--:--</div>
         </header>
 
-        <section class="chart-section">
-            <div class="chart-container">
-                <canvas id="marketChart"></canvas>
-            </div>
+        <section class="chart-wrapper">
+            <canvas id="mainChart"></canvas>
         </section>
 
-        <section class="data-grid" id="data-container">
-            <div class="loading-state">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Initializing Stream...
+        <section class="cards-grid" id="ticker-container">
+            <div class="loading">
+                <i class="fa-solid fa-spinner fa-spin"></i> Establishing Connection...
             </div>
         </section>
-
-        <footer>
-            <p>GlobalPulse System v2.1 | Data refreshed automatically.</p>
-        </footer>
-
     </main>
 
     <script src="index.js"></script>

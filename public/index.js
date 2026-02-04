@@ -1,90 +1,82 @@
 let marketChart;
 
 document.addEventListener('DOMContentLoaded', () => {
+    startClock();
     initChart();
-    loadData();
+    fetchData();
 
-    // Auto-refresh every 60 seconds
-    setInterval(loadData, 60000);
+    // Refresh data every 60 seconds
+    setInterval(fetchData, 60000);
 });
 
-async function loadData() {
+function startClock() {
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toLocaleTimeString();
+    }, 1000);
+}
+
+async function fetchData() {
     try {
-        // 1. Fetch Live Tiles
+        // 1. Get Live Data
         const resLive = await fetch('/api/live');
         const liveData = await resLive.json();
-        renderTiles(liveData);
+        renderCards(liveData);
 
-        // 2. Fetch History for Chart
+        // 2. Get History for Chart
         const resHist = await fetch('/api/history');
         const histData = await resHist.json();
         updateChart(histData);
 
     } catch (error) {
-        console.error("System Sync Error:", error);
+        console.error("Sync Error:", error);
     }
 }
 
-function renderTiles(data) {
-    const container = document.getElementById('data-container');
+function renderCards(data) {
+    const container = document.getElementById('ticker-container');
     container.innerHTML = '';
 
     if (data.length === 0) {
-        container.innerHTML = '<p style="color:gray;">Waiting for first data sync...</p>';
+        container.innerHTML = '<div class="loading">Waiting for server sync...</div>';
         return;
     }
 
     data.forEach(item => {
-        // Style Logic
-        const isPositive = item.change_pct >= 0;
-        const colorClass = isPositive ? 'text-green' : 'text-red';
-        const badgeClass = isPositive ? 'bg-green-dim' : 'bg-red-dim';
-        const icon = isPositive ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-        const sign = isPositive ? '+' : '';
+        const isUp = item.change_percent >= 0;
+        const trendClass = isUp ? 'trend-up' : 'trend-down';
+        const iconClass = isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+        
+        // Define an icon for the card header based on category
+        let headerIcon = 'fa-tag';
+        if(item.category === 'crypto') headerIcon = 'fa-bitcoin';
+        if(item.category === 'stock') headerIcon = 'fa-building';
+        if(item.category === 'currency') headerIcon = 'fa-money-bill-transfer';
 
-        // Icon Selection
-        let catIcon = 'fa-chart-pie';
-        if (item.category === 'crypto') catIcon = 'fa-bitcoin';
-        if (item.category === 'currency') catIcon = 'fa-money-bill-transfer';
-        if (item.category === 'commodity') catIcon = 'fa-gem';
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
             <div class="card-top">
-                <div>
-                    <span class="card-category">${item.category}</span>
-                    <div style="font-weight:600; font-size:1.1rem; margin-top:5px;">${item.item_name}</div>
-                </div>
-                <div class="card-icon">
-                    <i class="fa-solid ${catIcon}" style="color:white;"></i>
-                </div>
+                <span class="card-name">${item.name}</span>
+                <div class="card-icon"><i class="fa-solid ${headerIcon}"></i></div>
             </div>
-            <div class="price-area">
-                <h3>${formatPrice(item.price)}</h3>
-                <div class="change-badge ${badgeClass}">
-                    <i class="fa-solid ${icon}"></i>
-                    ${sign}${item.change_pct}%
-                </div>
+            <span class="card-price">$${Number(item.price).toLocaleString()}</span>
+            <div class="trend-badge ${trendClass}">
+                <i class="fa-solid ${iconClass}"></i>
+                ${item.change_percent}%
             </div>
         `;
-        container.appendChild(card);
+        container.appendChild(div);
     });
 }
 
-function formatPrice(num) {
-    // Format based on magnitude
-    if (num > 1000) return '$' + Number(num).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    return '$' + Number(num).toFixed(4);
-}
-
-// --- CHART.JS CONFIGURATION ---
+// --- Chart Configuration ---
 function initChart() {
-    const ctx = document.getElementById('marketChart').getContext('2d');
+    const ctx = document.getElementById('mainChart').getContext('2d');
     
-    // Gradient Fill
+    // Gradient effect
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(41, 98, 255, 0.5)');
+    gradient.addColorStop(0, 'rgba(41, 98, 255, 0.4)');
     gradient.addColorStop(1, 'rgba(41, 98, 255, 0)');
 
     marketChart = new Chart(ctx, {
@@ -92,30 +84,28 @@ function initChart() {
         data: {
             labels: [],
             datasets: [{
-                label: 'Market Trend (Primary Index)',
+                label: 'Market Trend',
                 data: [],
                 borderColor: '#2962ff',
                 backgroundColor: gradient,
                 borderWidth: 2,
                 fill: true,
-                tension: 0.4, // Smooth curves
-                pointRadius: 3
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6
             }]
         },
         options: {
             responsive: true,
-            maintainZXAspectRatio: false,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: 'white' } }
+                legend: { display: false }
             },
             scales: {
+                x: { display: false },
                 y: {
-                    grid: { color: '#333' },
-                    ticks: { color: '#a0a0a0' }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { display: false } // Hide time labels for cleanliness
+                    grid: { color: '#222' },
+                    ticks: { color: '#666' }
                 }
             }
         }
@@ -124,8 +114,7 @@ function initChart() {
 
 function updateChart(data) {
     if (!marketChart || data.length === 0) return;
-    
-    // Map DB data to Chart format
+
     const prices = data.map(d => d.price);
     const labels = data.map(d => new Date(d.captured_at).toLocaleTimeString());
 
