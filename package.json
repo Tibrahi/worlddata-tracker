@@ -16,5 +16,12 @@
   "bugs": {
     "url": "https://github.com/Tibrahi/worlddata-tracker/issues"
   },
-  "homepage": "https://github.com/Tibrahi/worlddata-tracker#readme"
+  "homepage": "https://github.com/Tibrahi/worlddata-tracker#readme",
+  "dependencies": {
+    "axios": "^1.13.4",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mysql2": "^3.16.3",
+    "node-cron": "^4.2.1"
+  }
 }

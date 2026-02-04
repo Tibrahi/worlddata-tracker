@@ -1,90 +1,135 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Set current date
-    const dateElement = document.getElementById('current-date');
-    const now = new Date();
-    dateElement.textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+let marketChart;
 
-    // 2. Fetch Data
-    fetchReport();
+document.addEventListener('DOMContentLoaded', () => {
+    initChart();
+    loadData();
+
+    // Auto-refresh every 60 seconds
+    setInterval(loadData, 60000);
 });
 
-async function fetchReport() {
+async function loadData() {
     try {
-        // Try to hit your API
-        const response = await fetch('/api/report');
-        
-        if (!response.ok) throw new Error('API not available');
-        
-        const data = await response.json();
-        renderDashboard(data);
+        // 1. Fetch Live Tiles
+        const resLive = await fetch('/api/live');
+        const liveData = await resLive.json();
+        renderTiles(liveData);
+
+        // 2. Fetch History for Chart
+        const resHist = await fetch('/api/history');
+        const histData = await resHist.json();
+        updateChart(histData);
 
     } catch (error) {
-        console.warn('API Error, loading mock data for UI demo:', error);
-        loadMockData();
+        console.error("System Sync Error:", error);
     }
 }
 
-function renderDashboard(data) {
-    // Update Stats
-    document.getElementById('global-volume').textContent = data.summary.volume || '$142.5B';
-    document.getElementById('market-sentiment').textContent = data.summary.sentiment || 'Bullish';
-    document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+function renderTiles(data) {
+    const container = document.getElementById('data-container');
+    container.innerHTML = '';
 
-    // Clear loading states
-    const commoditiesContainer = document.getElementById('commodities-container');
-    const currencyContainer = document.getElementById('currency-container');
-    commoditiesContainer.innerHTML = '';
-    currencyContainer.innerHTML = '';
+    if (data.length === 0) {
+        container.innerHTML = '<p style="color:gray;">Waiting for first data sync...</p>';
+        return;
+    }
 
-    // Render Commodities
-    data.commodities.forEach(item => {
-        commoditiesContainer.appendChild(createItemCard(item));
-    });
+    data.forEach(item => {
+        // Style Logic
+        const isPositive = item.change_pct >= 0;
+        const colorClass = isPositive ? 'text-green' : 'text-red';
+        const badgeClass = isPositive ? 'bg-green-dim' : 'bg-red-dim';
+        const icon = isPositive ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+        const sign = isPositive ? '+' : '';
 
-    // Render Currencies
-    data.currencies.forEach(item => {
-        currencyContainer.appendChild(createItemCard(item));
+        // Icon Selection
+        let catIcon = 'fa-chart-pie';
+        if (item.category === 'crypto') catIcon = 'fa-bitcoin';
+        if (item.category === 'currency') catIcon = 'fa-money-bill-transfer';
+        if (item.category === 'commodity') catIcon = 'fa-gem';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="card-top">
+                <div>
+                    <span class="card-category">${item.category}</span>
+                    <div style="font-weight:600; font-size:1.1rem; margin-top:5px;">${item.item_name}</div>
+                </div>
+                <div class="card-icon">
+                    <i class="fa-solid ${catIcon}" style="color:white;"></i>
+                </div>
+            </div>
+            <div class="price-area">
+                <h3>${formatPrice(item.price)}</h3>
+                <div class="change-badge ${badgeClass}">
+                    <i class="fa-solid ${icon}"></i>
+                    ${sign}${item.change_pct}%
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
     });
 }
 
-function createItemCard(item) {
-    const div = document.createElement('div');
-    // Determine class based on trend (up/down)
-    const trendClass = item.change >= 0 ? 'trend-up' : 'trend-down';
-    const badgeClass = item.change >= 0 ? 'up' : 'down';
-    const icon = item.change >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-    const sign = item.change >= 0 ? '+' : '';
-
-    div.className = `card item-card ${trendClass}`;
-    div.innerHTML = `
-        <div class="item-header">
-            <span class="item-name">${item.name}</span>
-            <i class="fa-solid ${icon}" style="color: ${item.change >= 0 ? '#22c55e' : '#ef4444'}"></i>
-        </div>
-        <div class="item-price">${item.value}</div>
-        <div class="trend-badge ${badgeClass}">
-            ${sign}${item.change}% Since yesterday
-        </div>
-    `;
-    return div;
+function formatPrice(num) {
+    // Format based on magnitude
+    if (num > 1000) return '$' + Number(num).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    return '$' + Number(num).toFixed(4);
 }
 
-// --- MOCK DATA GENERATOR (For testing UI without Backend) ---
-function loadMockData() {
-    const mockData = {
-        summary: { volume: "$4.2T", sentiment: "Volatile" },
-        commodities: [
-            { name: "Brent Crude Oil", value: "$82.40", change: 1.2 },
-            { name: "Gold (oz)", value: "$1,945.50", change: -0.5 },
-            { name: "Silver", value: "$23.10", change: 0.1 },
-            { name: "Natural Gas", value: "$2.80", change: -2.4 }
-        ],
-        currencies: [
-            { name: "EUR / USD", value: "1.082", change: -0.12 },
-            { name: "GBP / USD", value: "1.245", change: 0.45 },
-            { name: "JPY / USD", value: "145.20", change: -0.05 },
-            { name: "BTC / USD", value: "$42,500", change: 3.2 }
-        ]
-    };
-    renderDashboard(mockData);
+// --- CHART.JS CONFIGURATION ---
+function initChart() {
+    const ctx = document.getElementById('marketChart').getContext('2d');
+    
+    // Gradient Fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(41, 98, 255, 0.5)');
+    gradient.addColorStop(1, 'rgba(41, 98, 255, 0)');
+
+    marketChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Market Trend (Primary Index)',
+                data: [],
+                borderColor: '#2962ff',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4, // Smooth curves
+                pointRadius: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainZXAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: 'white' } }
+            },
+            scales: {
+                y: {
+                    grid: { color: '#333' },
+                    ticks: { color: '#a0a0a0' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { display: false } // Hide time labels for cleanliness
+                }
+            }
+        }
+    });
+}
+
+function updateChart(data) {
+    if (!marketChart || data.length === 0) return;
+    
+    // Map DB data to Chart format
+    const prices = data.map(d => d.price);
+    const labels = data.map(d => new Date(d.captured_at).toLocaleTimeString());
+
+    marketChart.data.labels = labels;
+    marketChart.data.datasets[0].data = prices;
+    marketChart.update();
 }
