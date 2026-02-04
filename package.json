@@ -1,0 +1,20 @@
+{
+  "name": "worlddata-tracker",
+  "version": "1.0.0",
+  "description": "WorldData Tracker is a backend analytics system built with Node.js that monitors global financial and product data. It tracks daily increases and decreases in worldwide cash flow, international product rates, and market trends, then generates structured reports for analysis and visualization.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tibrahi/worlddata-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tibrahi/worlddata-tracker/issues"
+  },
+  "homepage": "https://github.com/Tibrahi/worlddata-tracker#readme"
+}
