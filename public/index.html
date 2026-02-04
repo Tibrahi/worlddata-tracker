@@ -3,30 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlobalPulse | Real-Time Insights</title>
+    <title>GlobalPulse | Financial Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="main.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="app-container">
+
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-earth-americas"></i> GlobalPulse
+        </div>
+        <ul class="nav-links">
+            <li class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
+            <li><i class="fa-solid fa-clock-rotate-left"></i> History</li>
+            <li><i class="fa-solid fa-gear"></i> Settings</li>
+        </ul>
+        <div class="status-indicator">
+            <span class="dot pulse"></span> System Online
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        
         <header>
-            <div class="logo">
-                <i data-lucide="globe"></i>
-                <h1>Global<span>Pulse</span></h1>
+            <div class="header-text">
+                <h1>Market Overview</h1>
+                <p>Live tracking of global financial indicators.</p>
             </div>
-            <div id="last-updated" class="status">Syncing...</div>
+            <div class="date-display" id="current-date">
+                Loading date...
+            </div>
         </header>
 
-        <main id="dashboard">
-            <section class="stats-grid" id="stats-container">
-                <div class="loading">Loading global data...</div>
-            </section>
-        </main>
+        <section class="stats-grid">
+            <div class="card stat-card">
+                <div class="icon-box blue"><i class="fa-solid fa-globe"></i></div>
+                <div class="stat-info">
+                    <h3>Global Volume</h3>
+                    <p id="global-volume">Fetching...</p>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="icon-box green"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                <div class="stat-info">
+                    <h3>Market Sentiment</h3>
+                    <p id="market-sentiment">Fetching...</p>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="icon-box purple"><i class="fa-solid fa-server"></i></div>
+                <div class="stat-info">
+                    <h3>Data Source</h3>
+                    <p>Live API</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="data-section">
+            <h2><i class="fa-solid fa-layer-group"></i> Commodities & Products</h2>
+            <div class="grid-container" id="commodities-container">
+                <div class="loading-msg">Waiting for report...</div>
+            </div>
+        </section>
+
+        <section class="data-section">
+            <h2><i class="fa-solid fa-money-bill-transfer"></i> Currency Exchange</h2>
+            <div class="grid-container" id="currency-container">
+                 </div>
+        </section>
 
         <footer>
-            <p>GlobalPulse System &copy; 2026 | <span class="tagline">Monitoring Global Trends</span></p>
+            <p>GlobalPulse System v1.0 | Last Sync: <span id="last-updated">--:--</span></p>
         </footer>
-    </div>
+
+    </main>
+
     <script src="index.js"></script>
 </body>
 </html>
